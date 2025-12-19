@@ -3,13 +3,18 @@ import { Heart, ShoppingBag, Share2, Star, Check, Truck, Shield, RefreshCw } fro
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Product } from "@/data/products";
+import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
+import { toast } from "sonner";
 
 interface ProductInfoProps {
   product: Product;
 }
 
 export function ProductInfo({ product }: ProductInfoProps) {
-  const [isLiked, setIsLiked] = useState(false);
+  const { addToCart } = useCart();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const isLiked = isInWishlist(product.id);
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || null);
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || null);
   const [quantity, setQuantity] = useState(1);
@@ -39,7 +44,15 @@ export function ProductInfo({ product }: ProductInfoProps) {
             variant="ghost"
             size="icon"
             className="flex-shrink-0"
-            onClick={() => setIsLiked(!isLiked)}
+            onClick={() => {
+              if (isLiked) {
+                removeFromWishlist(product.id);
+                toast.success('Removed from wishlist');
+              } else {
+                addToWishlist(product);
+                toast.success('Added to wishlist');
+              }
+            }}
           >
             <Heart
               className={cn(
@@ -161,7 +174,15 @@ export function ProductInfo({ product }: ProductInfoProps) {
           </button>
         </div>
 
-        <Button variant="hero" size="lg" className="flex-1 gap-2">
+        <Button 
+          variant="hero" 
+          size="lg" 
+          className="flex-1 gap-2"
+          onClick={() => {
+            addToCart(product, quantity, selectedColor || undefined, selectedSize || undefined);
+            toast.success('Added to cart');
+          }}
+        >
           <ShoppingBag className="h-5 w-5" />
           Add to Cart
         </Button>
