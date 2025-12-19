@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { name: "Collections", href: "/collections" },
-  { name: "New Arrivals", href: "/new-arrivals" },
-  { name: "Bestsellers", href: "/bestsellers" },
-  { name: "Our Story", href: "/story" },
+  { name: "Shop All", href: "/products" },
+  { name: "Collections", href: "/products?collection=garden-dreams" },
+  { name: "New Arrivals", href: "/products?filter=new" },
+  { name: "Our Story", href: "/#story" },
 ];
 
 export function Navbar() {
