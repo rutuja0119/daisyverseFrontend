@@ -4,6 +4,9 @@ import { Heart, ShoppingBag, Eye, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Product } from "@/data/products";
+import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
+import { toast } from "sonner";
 
 interface ProductGridCardProps {
   product: Product;
@@ -11,8 +14,10 @@ interface ProductGridCardProps {
 
 export function ProductGridCard({ product }: ProductGridCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
+  const { addToCart } = useCart();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const isLiked = isInWishlist(product.id);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isHovered) return;
@@ -105,7 +110,13 @@ export function ProductGridCard({ product }: ProductGridCardProps) {
             )}
             onClick={(e) => {
               e.preventDefault();
-              setIsLiked(!isLiked);
+              if (isLiked) {
+                removeFromWishlist(product.id);
+                toast.success('Removed from wishlist');
+              } else {
+                addToWishlist(product);
+                toast.success('Added to wishlist');
+              }
             }}
           >
             <Heart
@@ -125,7 +136,8 @@ export function ProductGridCard({ product }: ProductGridCardProps) {
               className="flex-1 text-sm backdrop-blur-lg"
               onClick={(e) => {
                 e.preventDefault();
-                // Add to cart logic
+                addToCart(product);
+                toast.success('Added to cart');
               }}
             >
               <ShoppingBag className="h-4 w-4 mr-2" />
