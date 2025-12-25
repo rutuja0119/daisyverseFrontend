@@ -108,8 +108,8 @@ export function ProductManagement() {
       const params = new URLSearchParams();
       
       if (searchTerm) params.append('search', searchTerm);
-      if (categoryFilter) params.append('category', categoryFilter);
-      if (availabilityFilter) params.append('availability', availabilityFilter);
+      if (categoryFilter && categoryFilter !== 'all') params.append('category', categoryFilter);
+      if (availabilityFilter && availabilityFilter !== 'all') params.append('availability', availabilityFilter);
       if (statusFilter === 'featured') params.append('featured', 'true');
       if (statusFilter === 'active') params.append('isActive', 'true');
       if (statusFilter === 'inactive') params.append('isActive', 'false');
@@ -118,9 +118,10 @@ export function ProductManagement() {
       params.append('limit', '20');
       
       const response = await apiClient.get(`/admin/products?${params}`);
-      setProducts(response.data.products);
-      setTotalPages(response.data.totalPages);
-      setTotalProducts(response.data.total);
+      const data = response.data as { products: Product[]; totalPages: number; total: number };
+      setProducts(data.products);
+      setTotalPages(data.totalPages);
+      setTotalProducts(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -135,7 +136,8 @@ export function ProductManagement() {
   const fetchStats = async () => {
     try {
       const response = await apiClient.get('/admin/stats');
-      setStats(response.data);
+      const data = response.data as { stats: ProductStats };
+      setStats(data.stats);
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     }
@@ -242,9 +244,9 @@ export function ProductManagement() {
 
   const clearFilters = () => {
     setSearchTerm('');
-    setCategoryFilter('');
-    setAvailabilityFilter('');
-    setStatusFilter('');
+    setCategoryFilter('all');
+    setAvailabilityFilter('all');
+    setStatusFilter('all');
     setCurrentPage(1);
   };
 
@@ -253,8 +255,8 @@ export function ProductManagement() {
       const params = new URLSearchParams();
       
       if (searchTerm) params.append('search', searchTerm);
-      if (categoryFilter) params.append('category', categoryFilter);
-      if (availabilityFilter) params.append('availability', availabilityFilter);
+      if (categoryFilter && categoryFilter !== 'all') params.append('category', categoryFilter);
+      if (availabilityFilter && availabilityFilter !== 'all') params.append('availability', availabilityFilter);
       if (statusFilter === 'featured') params.append('featured', 'true');
       if (statusFilter === 'active') params.append('isActive', 'true');
       if (statusFilter === 'inactive') params.append('isActive', 'false');
@@ -262,7 +264,7 @@ export function ProductManagement() {
       const response = await apiClient.get(`/admin/products/export?${params}`);
       
       // Create and download CSV
-      const csvContent = response.data;
+      const csvContent = response.data as string;
       const blob = new Blob([csvContent], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -389,7 +391,7 @@ export function ProductManagement() {
                   <SelectValue placeholder="All categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All categories</SelectItem>
+                  <SelectItem value="all">All categories</SelectItem>
                   {categories.map(category => (
                     <SelectItem key={category} value={category}>
                       {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -406,7 +408,7 @@ export function ProductManagement() {
                   <SelectValue placeholder="All availability" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All availability</SelectItem>
+                  <SelectItem value="all">All availability</SelectItem>
                   {availabilityOptions.map(option => (
                     <SelectItem key={option} value={option}>
                       {option.replace('_', ' ').charAt(0).toUpperCase() + option.replace('_', ' ').slice(1)}
@@ -423,7 +425,7 @@ export function ProductManagement() {
                   <SelectValue placeholder="All status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All status</SelectItem>
+                  <SelectItem value="all">All status</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="inactive">Inactive</SelectItem>
                   <SelectItem value="featured">Featured</SelectItem>
