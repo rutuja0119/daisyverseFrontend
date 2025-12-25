@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Sparkles, Shield } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 
@@ -223,6 +223,23 @@ const Auth = () => {
                   </svg>
                   GitHub
                 </Button>
+              </div>
+
+              {/* Admin and back links */}
+              <div className="mt-8 space-y-3 text-center">
+                <button
+                  onClick={() => navigate('/admin/login')}
+                  className="flex items-center justify-center gap-2 text-sm text-purple-600 hover:text-purple-700 transition-colors w-full"
+                >
+                  <Shield className="w-4 h-4" />
+                  Admin Login
+                </button>
+                <button
+                  onClick={() => navigate('/')}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  ← Back to Store
+                </button>
               </div>
             </div>
           </div>

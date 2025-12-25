@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { apiClient, AuthResponse } from '@/lib/api';
 
 export interface User {
   id: string;
@@ -12,9 +13,12 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signup: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
+  getUserProfile: () => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -22,47 +26,74 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const saved = localStorage.getItem('daisy-user');
-    if (saved) setUser(JSON.parse(saved));
+    const token = localStorage.getItem('daisy-token');
+    if (saved && token) {
+      setUser(JSON.parse(saved));
+    }
     setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
-    const users = JSON.parse(localStorage.getItem('daisy-users') || '[]');
-    const found = users.find((u: any) => u.email === email && u.password === password);
-    
-    if (found) {
-      const userData = { id: found.id, email: found.email, name: found.name };
-      setUser(userData);
-      localStorage.setItem('daisy-user', JSON.stringify(userData));
-      return { success: true };
+    try {
+      const result = await apiClient.post<AuthResponse>('/users/login', { email, password });
+      
+      if (result.success && result.data) {
+        const userData = { id: result.data.user.id, email: result.data.user.email, name: result.data.user.name };
+        setUser(userData);
+        localStorage.setItem('daisy-user', JSON.stringify(userData));
+        localStorage.setItem('daisy-token', result.data.token);
+        return { success: true };
+      } else {
+        return { success: false, error: result.message || 'Login failed' };
+      }
+    } catch (error) {
+      return { success: false, error: 'Network error. Please try again.' };
     }
-    return { success: false, error: 'Invalid email or password' };
   };
 
   const signup = async (email: string, password: string, name: string) => {
-    const users = JSON.parse(localStorage.getItem('daisy-users') || '[]');
-    
-    if (users.find((u: any) => u.email === email)) {
-      return { success: false, error: 'Email already registered' };
+    try {
+      const result = await apiClient.post<AuthResponse>('/users/register', { email, password, name });
+      
+      if (result.success && result.data) {
+        const userData = { id: result.data.user.id, email: result.data.user.email, name: result.data.user.name };
+        setUser(userData);
+        localStorage.setItem('daisy-user', JSON.stringify(userData));
+        localStorage.setItem('daisy-token', result.data.token);
+        return { success: true };
+      } else {
+        return { success: false, error: result.message || 'Registration failed' };
+      }
+    } catch (error) {
+      return { success: false, error: 'Network error. Please try again.' };
     }
-
-    const newUser = { id: crypto.randomUUID(), email, password, name };
-    users.push(newUser);
-    localStorage.setItem('daisy-users', JSON.stringify(users));
-
-    const userData = { id: newUser.id, email: newUser.email, name: newUser.name };
-    setUser(userData);
-    localStorage.setItem('daisy-user', JSON.stringify(userData));
-    return { success: true };
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('daisy-user');
+    localStorage.removeItem('daisy-token');
+  };
+
+  const getUserProfile = async () => {
+    try {
+      const result = await apiClient.get<AuthResponse>('/users/profile');
+      
+      if (result.success && result.data) {
+        const userData = { id: result.data.user.id, email: result.data.user.email, name: result.data.user.name };
+        setUser(userData);
+        localStorage.setItem('daisy-user', JSON.stringify(userData));
+        return { success: true };
+      } else {
+        return { success: false, error: result.message || 'Failed to get user profile' };
+      }
+    } catch (error) {
+      return { success: false, error: 'Network error. Please try again.' };
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, signup, logout, getUserProfile }}>
       {children}
     </AuthContext.Provider>
   );

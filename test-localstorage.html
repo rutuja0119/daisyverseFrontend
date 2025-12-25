@@ -1,0 +1,15 @@
+// Check if admin token is stored in localStorage
+console.log('Checking localStorage...');
+console.log('admin-token:', localStorage.getItem('admin-token'));
+console.log('admin-user:', localStorage.getItem('admin-user'));
+console.log('daisy-token:', localStorage.getItem('daisy-token'));
+
+// Check if user is logged in as admin
+const adminUser = localStorage.getItem('admin-user');
+if (adminUser) {
+  const userData = JSON.parse(adminUser);
+  console.log('Admin user data:', userData);
+  console.log('Is admin?', userData.role === 'admin');
+} else {
+  console.log('No admin user found in localStorage');
+}

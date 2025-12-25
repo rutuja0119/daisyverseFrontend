@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import {
   LayoutDashboard,
   Package,
@@ -33,6 +34,8 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { admin, logout } = useAdminAuth();
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -85,15 +88,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </nav>
 
         {/* Bottom section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
-          <Link
-            to="/"
-            className="flex items-center gap-3 px-4 py-3 rounded-xl font-body text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
-          >
-            <LogOut className="h-5 w-5" />
-            {isSidebarOpen && <span>Back to Store</span>}
-          </Link>
-        </div>
+          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
+            <button
+              onClick={() => {
+                logout();
+                navigate('/admin/login');
+              }}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl font-body text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all w-full text-left"
+            >
+              <LogOut className="h-5 w-5" />
+              {isSidebarOpen && <span>Logout</span>}
+            </button>
+          </div>
       </aside>
 
       {/* Main Content */}
@@ -130,11 +136,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <button className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-muted transition-colors">
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                 <span className="font-display text-sm font-semibold text-primary">
-                  AD
+                  {admin?.name?.charAt(0).toUpperCase() || 'A'}
                 </span>
               </div>
               <span className="font-body text-sm font-medium text-foreground hidden md:block">
-                Admin
+                {admin?.name || 'Admin'}
               </span>
               <ChevronDown className="h-4 w-4 text-muted-foreground hidden md:block" />
             </button>
