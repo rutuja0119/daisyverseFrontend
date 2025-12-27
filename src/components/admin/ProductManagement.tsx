@@ -576,7 +576,7 @@ export function ProductManagement() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setQuickViewProduct(product)}
+                          onClick={() => navigate(`/admin/products/${product._id}`)}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>

@@ -2,47 +2,56 @@ import { ProductCard } from "./ProductCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { AnimatedSection } from "./AnimatedSection";
-import productEarrings from "@/assets/product-earrings.jpg";
-import productBracelet from "@/assets/product-bracelet.jpg";
-import productRing from "@/assets/product-ring.jpg";
-import productNecklace from "@/assets/product-necklace.jpg";
+import { apiClient } from "@/lib/api";
+import { useState, useEffect } from "react";
 
-const products = [
-  {
-    id: 1,
-    name: "Golden Daisy Studs",
-    price: 128,
-    image: productEarrings,
-    category: "Earrings",
-    isNew: true,
-  },
-  {
-    id: 2,
-    name: "Petal Chain Bracelet",
-    price: 156,
-    image: productBracelet,
-    category: "Bracelets",
-    isBestseller: true,
-  },
-  {
-    id: 3,
-    name: "Bloom Ring",
-    price: 189,
-    image: productRing,
-    category: "Rings",
-    isNew: true,
-  },
-  {
-    id: 4,
-    name: "Daisy Drop Necklace",
-    price: 245,
-    image: productNecklace,
-    category: "Necklaces",
-    isBestseller: true,
-  },
-];
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  images: string[];
+  category: string;
+  featured: boolean;
+  isNew?: boolean;
+  isBestseller?: boolean;
+}
 
 export function FeaturedProducts() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get('/products?limit=8');
+      
+      if (response.success && response.data) {
+        console.log('API Response:', response.data);
+        console.log('Total products:', response.data.products.length);
+        console.log('Featured products:', response.data.products.filter((p: Product) => p.featured).length);
+        
+        // Filter to show only featured products or limit to 4 products
+        const featuredProducts = response.data.products.filter((p: Product) => p.featured).slice(0, 4);
+        const displayProducts = featuredProducts.length > 0 ? featuredProducts : response.data.products.slice(0, 4);
+        
+        console.log('Display products:', displayProducts.length);
+        console.log('Display products details:', displayProducts);
+        
+        setProducts(displayProducts);
+      } else {
+        setError('Failed to load products');
+      }
+    } catch (err) {
+      setError('Failed to load products');
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <section className="py-24 bg-background relative overflow-hidden">
       {/* Background decorative elements */}
@@ -75,20 +84,50 @@ export function FeaturedProducts() {
           </AnimatedSection>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <p className="mt-4 text-muted-foreground">Loading products...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div className="text-center py-12">
+            <p className="text-red-500 mb-4">{error}</p>
+            <Button onClick={fetchProducts} variant="outline">
+              Try Again
+            </Button>
+          </div>
+        )}
+
         {/* Product Grid with staggered animations */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {products.map((product, index) => (
-            <AnimatedSection
-              key={product.id}
-              animation="scale"
-              delay={index * 100}
-            >
-              <div className="hover-lift">
-                <ProductCard {...product} />
-              </div>
-            </AnimatedSection>
-          ))}
-        </div>
+        {!loading && !error && products.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {products.map((product, index) => {
+              console.log('Mapping product:', product);
+              return (
+                <AnimatedSection
+                  key={product._id}
+                  animation="scale"
+                  delay={index * 100}
+                >
+                  <div className="hover-lift">
+                    <ProductCard {...product} />
+                  </div>
+                </AnimatedSection>
+              );
+            })}
+          </div>
+        )}
+
+        {/* No Products State */}
+        {!loading && !error && products.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No products available at the moment.</p>
+          </div>
+        )}
 
         {/* Decorative line */}
         <AnimatedSection animation="fade-up" delay={500}>

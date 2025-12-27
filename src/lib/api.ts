@@ -80,10 +80,11 @@ class ApiClient {
 
   async put<T>(endpoint: string, body: any): Promise<ApiResponse<T>> {
     try {
+      const isFormData = body instanceof FormData;
       const response = await fetch(`${API_URL}${endpoint}`, {
         method: 'PUT',
-        headers: this.getHeaders(),
-        body: JSON.stringify(body),
+        headers: this.getHeaders(isFormData ? 'multipart/form-data' : 'application/json'),
+        body: isFormData ? body : JSON.stringify(body),
       });
       
       const data = await response.json();

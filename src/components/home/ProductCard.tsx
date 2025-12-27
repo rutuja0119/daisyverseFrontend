@@ -4,23 +4,27 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface ProductCardProps {
-  id: number;
+  _id: string;
   name: string;
   price: number;
-  image: string;
+  images: string[];
   category: string;
+  featured?: boolean;
   isNew?: boolean;
   isBestseller?: boolean;
 }
 
 export function ProductCard({
+  _id,
   name,
   price,
-  image,
+  images,
   category,
+  featured,
   isNew,
   isBestseller,
 }: ProductCardProps) {
+  console.log('ProductCard received:', { _id, name, price, images, category, featured, isNew, isBestseller });
   const [isHovered, setIsHovered] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
@@ -33,7 +37,7 @@ export function ProductCard({
       {/* Image Container */}
       <div className="relative overflow-hidden rounded-2xl bg-muted aspect-square">
         <img
-          src={image}
+          src={images && images.length > 0 ? images[0] : '/placeholder-product.jpg'}
           alt={name}
           className={cn(
             "w-full h-full object-cover transition-all duration-700",

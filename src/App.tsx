@@ -18,6 +18,8 @@ import AdminAuth from "./pages/AdminAuth";
 import NotFound from "./pages/NotFound";
 import { AddProduct } from "@/components/admin/AddProduct";
 import { ProductManagement } from "@/components/admin/ProductManagement";
+import { ViewProduct } from "@/components/admin/ViewProduct";
+import { EditProduct } from "@/components/admin/EditProduct";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +64,22 @@ const App = () => (
                     element={
                       <ProtectedAdminRoute>
                         <AddProduct />
+                      </ProtectedAdminRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/products/:id" 
+                    element={
+                      <ProtectedAdminRoute>
+                        <ViewProduct />
+                      </ProtectedAdminRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/products/:id/edit" 
+                    element={
+                      <ProtectedAdminRoute>
+                        <EditProduct />
                       </ProtectedAdminRoute>
                     } 
                   />
